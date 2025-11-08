@@ -303,7 +303,7 @@ static void hookProcTargetWindow(AXObserverRef observer, AXUIElementRef element,
           isEqualToString:(__bridge NSString *)kAXTitleChangedNotification]) {
     NSString *title = getTitleForWindow(element);
     if (title) {
-      targetInfo.title = [title UTF8String];
+      // Note: title is no longer used directly, we use titles array instead
     }
   }
 }
@@ -521,7 +521,7 @@ static void checkAndHandleWindow(pid_t pid, AXUIElementRef frontmostWindow) {
       if (targetInfo.current_title != NULL) {
         free(targetInfo.current_title);
       }
-      targetInfo.current_title = malloc([title lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1);
+      targetInfo.current_title = (char*)malloc([title lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1);
       strcpy(targetInfo.current_title, [title UTF8String]);
       break;
     }
@@ -558,7 +558,7 @@ static void checkAndHandleWindow(pid_t pid, AXUIElementRef frontmostWindow) {
       }};
   
   if (targetInfo.current_title != NULL) {
-    e.data.attach.matched_title = malloc(strlen(targetInfo.current_title) + 1);
+    e.data.attach.matched_title = (char*)malloc(strlen(targetInfo.current_title) + 1);
     strcpy(e.data.attach.matched_title, targetInfo.current_title);
   }
   
@@ -674,8 +674,8 @@ static void hookThread(void *_arg) {
 
 void ow_start_hook(char *target_window_title, void *overlay_window_id) {
   // Single title mode, convert to multi-title array
-  targetInfo.titles = malloc(sizeof(char*));
-  targetInfo.titles[0] = malloc(strlen(target_window_title) + 1);
+  targetInfo.titles = (char**)malloc(sizeof(char*));
+  targetInfo.titles[0] = (char*)malloc(strlen(target_window_title) + 1);
   strcpy(targetInfo.titles[0], target_window_title);
   targetInfo.title_count = 1;
   targetInfo.current_title = NULL;
@@ -693,11 +693,11 @@ void ow_start_hook(char *target_window_title, void *overlay_window_id) {
 void ow_start_hook_multi(char** target_window_titles, int title_count, void* overlay_window_id) {
   // Multi-title mode
   targetInfo.title_count = title_count;
-  targetInfo.titles = malloc(sizeof(char*) * title_count);
+  targetInfo.titles = (char**)malloc(sizeof(char*) * title_count);
   targetInfo.current_title = NULL;
   
   for (int i = 0; i < title_count; i++) {
-    targetInfo.titles[i] = malloc(strlen(target_window_titles[i]) + 1);
+    targetInfo.titles[i] = (char*)malloc(strlen(target_window_titles[i]) + 1);
     strcpy(targetInfo.titles[i], target_window_titles[i]);
   }
   
