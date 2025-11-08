@@ -1,6 +1,6 @@
 {
-  "name": "electron-overlay-window",
-  "version": "3.4.0",
+  "name": "@donkichen/electron-overlay-window",
+  "version": "1.0.0",
   "author": {
     "name": "Alexander Drozdov, DonkiChen"
   },
