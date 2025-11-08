@@ -175,7 +175,19 @@ static void check_and_handle_window(xcb_window_t wid, struct ow_target_window* t
   if (!get_title(wid, &title) || title == NULL) {
     return;
   }
-  bool is_equal = (strcmp(title, target_info->title) == 0);
+  bool is_equal = false;
+  for (int i = 0; i < target_info->title_count; i++) {
+    if (strcmp(title, target_info->titles[i]) == 0) {
+      is_equal = true;
+      // Update current matched title
+      if (target_info->current_title != NULL) {
+        free(target_info->current_title);
+      }
+      target_info->current_title = malloc(strlen(title) + 1);
+      strcpy(target_info->current_title, title);
+      break;
+    }
+  }
   free(title);
   if (!is_equal) {
     return;
