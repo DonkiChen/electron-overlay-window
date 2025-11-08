@@ -1,0 +1,84 @@
+# This workflow will build and publish a package to npm when manually triggered
+name: Publish to npm
+
+on:
+  workflow_dispatch:  # 只允许手动触发
+
+jobs:
+  prebuild-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master  # 使用 master 分支
+      - uses: actions/setup-node@v4
+      - run: yarn --frozen-lockfile
+      - run: yarn prebuild
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: prebuilds
+
+  prebuild-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master  # 使用 master 分支
+      - uses: actions/setup-node@v4
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb1-dev
+      - run: yarn --frozen-lockfile
+      - run: yarn prebuild
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: prebuilds
+
+  prebuild-darwin:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master  # 使用 master 分支
+      - uses: actions/setup-node@v4
+      - run: yarn --frozen-lockfile
+      - run: yarn prebuild --arch x64
+      - run: yarn prebuild --arch arm64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: darwin
+          path: prebuilds
+
+  build-and-publish:
+    needs:
+      - prebuild-windows
+      - prebuild-linux
+      - prebuild-darwin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master  # 使用 master 分支
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows
+          path: prebuilds
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux
+          path: prebuilds
+      - uses: actions/download-artifact@v4
+        with:
+          name: darwin
+          path: prebuilds
+      - uses: actions/setup-node@v4
+        with:
+          registry-url: https://registry.npmjs.org/
+      - run: yarn --frozen-lockfile --ignore-scripts
+      - run: yarn tsc
+      - run: npm pack
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
