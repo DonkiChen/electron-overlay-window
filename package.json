@@ -1,12 +1,12 @@
 {
   "name": "electron-overlay-window",
-  "version": "3.3.1",
+  "version": "3.4.0",
   "author": {
-    "name": "Alexander Drozdov"
+    "name": "Alexander Drozdov, DonkiChen"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/SnosMe/electron-overlay-window.git"
+    "url": "https://github.com/DonkiChen/electron-overlay-window.git"
   },
   "license": "MIT",
   "keywords": [
